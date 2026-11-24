@@ -1,0 +1,49 @@
+{
+  "id": "S4-stale-approval",
+  "title": "Approval invalidated when the facts change",
+  "description": "After approval, the requester amends the change. The old approval and grant are superseded, the old fingerprint and the old grant are refused, and the task must be re-planned, re-evidenced and re-approved before it can run.",
+  "request": {
+    "title": "Shorten idle session timeout",
+    "project": "lumen-notes",
+    "requester": "riley.chen",
+    "steps": [
+      {"action": "change_auth", "path": "src/auth/session.py",
+       "content": "SESSION_MINUTES = 30\n\n\ndef session_timeout():\n    return SESSION_MINUTES\n"}
+    ]
+  },
+  "steps": [
+    {"do": "submit"},
+    {"do": "classify", "state": "CLASSIFIED"},
+    {"do": "evidence", "type": "plan"},
+    {"do": "plan"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator"},
+    {"do": "evidence", "type": "risk_assessment"},
+    {"do": "review", "state": "READY_FOR_REVIEW"},
+    {"do": "authorize", "state": "APPROVAL_REQUIRED"},
+    {"do": "approve", "actor": "sam.ortiz", "state": "AUTHORIZED", "note": "approval bound to fingerprint #1"},
+    {"do": "amend", "state": "CLASSIFIED", "note": "facts change after approval: approval, grant and evidence are invalidated",
+     "request": {
+       "title": "Shorten idle session timeout",
+       "project": "lumen-notes",
+       "requester": "riley.chen",
+       "steps": [
+         {"action": "change_auth", "path": "src/auth/session.py",
+          "content": "SESSION_MINUTES = 15\n\n\ndef session_timeout():\n    return SESSION_MINUTES\n"},
+         {"action": "edit_docs", "path": "docs/usage.md",
+          "content": "# Using Lumen Notes\n\nCreate a note, tag it, and search by tag.\n\nIdle sessions end after 15 minutes.\n"}
+       ]
+     }},
+    {"do": "execute", "actor": "agent.worker", "expect": "INVALID_TRANSITION", "state": "CLASSIFIED", "note": "the old authorization no longer applies"},
+    {"do": "evidence", "type": "plan"},
+    {"do": "plan"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator"},
+    {"do": "evidence", "type": "risk_assessment"},
+    {"do": "review", "state": "READY_FOR_REVIEW"},
+    {"do": "authorize", "state": "APPROVAL_REQUIRED"},
+    {"do": "approve", "actor": "sam.ortiz", "fingerprint": "previous", "expect": "STALE_AUTHORIZATION", "note": "re-using the fingerprint approved before the amendment"},
+    {"do": "approve", "actor": "sam.ortiz", "state": "AUTHORIZED", "note": "fresh review of fingerprint #2"},
+    {"do": "execute", "actor": "agent.worker", "grant": "previous", "expect": "STALE_AUTHORIZATION", "state": "AUTHORIZED", "note": "the superseded grant cannot be used"},
+    {"do": "execute", "actor": "agent.worker", "state": "VERIFIED"},
+    {"do": "complete", "state": "COMPLETED"}
+  ]
+}

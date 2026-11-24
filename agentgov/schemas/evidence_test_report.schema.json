@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/evidence_test_report",
+  "title": "Test report evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "subject_fingerprint", "suite", "total", "passed", "failed", "skipped", "result"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^TASK-\\d{4}$"},
+    "subject_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "suite": {"type": "string", "minLength": 1, "maxLength": 120},
+    "total": {"type": "integer", "minimum": 0},
+    "passed": {"type": "integer", "minimum": 0},
+    "failed": {"type": "integer", "minimum": 0},
+    "skipped": {"type": "integer", "minimum": 0},
+    "result": {"enum": ["PASS", "FAIL"]},
+    "executed_at": {"type": "string", "format": "date-time"}
+  }
+}

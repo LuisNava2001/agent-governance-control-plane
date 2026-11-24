@@ -1,0 +1,26 @@
+{
+  "id": "S7-tampered-evidence",
+  "title": "Evidence edited on disk after authorization is caught",
+  "description": "After authorization someone edits the test report file directly. The execution gate re-checks the digest, refuses to start, and an operator blocks the task.",
+  "request": {
+    "title": "Bump markdown renderer",
+    "project": "lumen-notes",
+    "requester": "noor.haddad",
+    "steps": [
+      {"action": "update_dependency", "path": "requirements.txt", "content": "markdown-renderer==2.2.0\n"},
+      {"action": "run_tests"}
+    ]
+  },
+  "steps": [
+    {"do": "submit"},
+    {"do": "classify", "state": "CLASSIFIED", "note": "dependency change is MEDIUM"},
+    {"do": "evidence", "type": "plan"},
+    {"do": "plan"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator"},
+    {"do": "review", "state": "READY_FOR_REVIEW"},
+    {"do": "authorize", "state": "AUTHORIZED"},
+    {"do": "tamper_evidence", "type": "test_report", "with": {"suite": "edited by hand after the run"}, "state": "AUTHORIZED"},
+    {"do": "execute", "actor": "agent.worker", "expect": "GATE_FAILED", "state": "AUTHORIZED", "note": "digest no longer matches"},
+    {"do": "block", "actor": "sam.ortiz", "state": "BLOCKED", "reason": "evidence integrity failure"}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "S2-missing-evidence",
+  "title": "Feature change waits for valid evidence",
+  "description": "A source change is MEDIUM even though the requester declared LOW. Review routes it to EVIDENCE_PENDING until a passing test report exists; a failing report does not count.",
+  "request": {
+    "title": "Case-insensitive tag search",
+    "project": "lumen-notes",
+    "requester": "riley.chen",
+    "declared_risk": "LOW",
+    "steps": [
+      {"action": "edit_source", "path": "src/notes/search.py",
+       "content": "def search(notes, tag):\n    wanted = tag.lower()\n    return [note for note in notes if wanted in (t.lower() for t in note[\"tags\"])]\n"},
+      {"action": "add_tests", "path": "tests/test_search.txt",
+       "content": "Simulated test inventory: search_by_tag, search_empty_tag, search_unknown_tag, search_mixed_case_tag\n"},
+      {"action": "run_tests"}
+    ]
+  },
+  "steps": [
+    {"do": "submit", "state": "CREATED"},
+    {"do": "classify", "state": "CLASSIFIED", "note": "declared LOW is ignored: edit_source on src/** is MEDIUM"},
+    {"do": "evidence", "type": "plan"},
+    {"do": "plan", "state": "PLANNED"},
+    {"do": "review", "state": "EVIDENCE_PENDING", "note": "no test report yet"},
+    {"do": "authorize", "expect": "INVALID_TRANSITION", "state": "EVIDENCE_PENDING", "note": "cannot skip ahead"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator", "with": {"passed": 40, "failed": 2, "result": "FAIL"}},
+    {"do": "review", "state": "EVIDENCE_PENDING", "note": "a failing report is evidence, but not passing evidence"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator"},
+    {"do": "review", "state": "READY_FOR_REVIEW"},
+    {"do": "authorize", "state": "AUTHORIZED"},
+    {"do": "execute", "actor": "agent.worker", "state": "VERIFIED"},
+    {"do": "complete", "state": "COMPLETED"}
+  ]
+}

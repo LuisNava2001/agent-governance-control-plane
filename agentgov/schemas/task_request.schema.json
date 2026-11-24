@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/task_request",
+  "title": "Task request",
+  "description": "What a requester asks an agent to do. Facts only; risk is computed, not declared.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "project", "requester", "steps"],
+  "properties": {
+    "title": {"type": "string", "minLength": 3, "maxLength": 120},
+    "project": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,40}$"},
+    "requester": {"type": "string", "pattern": "^[a-z]+\\.[a-z]+$"},
+    "description": {"type": "string", "maxLength": 2000},
+    "declared_risk": {
+      "description": "Optional. May raise the computed level, never lower it.",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action"],
+        "properties": {
+          "action": {"type": "string", "pattern": "^[a-z][a-z_]{2,39}$"},
+          "path": {"type": "string", "minLength": 1, "maxLength": 200},
+          "content": {"type": "string", "maxLength": 20000},
+          "summary": {"type": "string", "maxLength": 200}
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "notes": {"type": "string", "maxLength": 2000}
+      }
+    }
+  }
+}

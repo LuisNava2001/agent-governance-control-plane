@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Governance Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>Agent Governance Control Plane <span class="sub">deterministic controls around a simulated AI agent</span></h1>
+      <p class="lede">
+        Each scenario was run by the real control plane in a fresh local store. Every step shows what was asked,
+        what the control plane decided and why. Fictional application, fictional people, simulated agent.
+      </p>
+      <p class="badges">
+        <span class="badge badge-strong">Recorded runs: deterministic clock, no LLM, no network</span>
+        <span class="badge" id="summary-badge"></span>
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <nav class="list" aria-label="Scenarios">
+      <h2>Scenarios</h2>
+      <ol id="scenario-list"></ol>
+    </nav>
+    <article class="detail" id="detail" aria-live="polite"></article>
+  </main>
+
+  <footer class="wrap foot">
+    Regenerate with <code>python -m agentgov demo --out demo/data.js</code>. Hashes shown are 12-character prefixes.
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

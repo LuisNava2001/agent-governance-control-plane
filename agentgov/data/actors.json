@@ -1,0 +1,9 @@
+{
+  "actors": [
+    {"id": "riley.chen", "name": "Riley Chen (fictional engineer)", "roles": ["engineer"]},
+    {"id": "noor.haddad", "name": "Noor Haddad (fictional engineer)", "roles": ["engineer"]},
+    {"id": "sam.ortiz", "name": "Sam Ortiz (fictional senior engineer)", "roles": ["engineer", "approver"]},
+    {"id": "kai.morgan", "name": "Kai Morgan (fictional release manager)", "roles": ["approver", "release_manager"]},
+    {"id": "agent.worker", "name": "Simulated coding agent", "roles": ["agent"]}
+  ]
+}

@@ -1,0 +1,24 @@
+# Python caches and packaging
+__pycache__/
+*.py[cod]
+*.egg-info/
+/build/
+/dist/
+.venv/
+venv/
+
+# Local control-plane state (tasks, evidence, sandboxes, audit log). Recreate with `python -m agentgov init`.
+/.agentgov/
+/.ci-home/
+
+# Local secrets and configuration (none are used or committed)
+.env
+.env.*
+*.key
+*.pem
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

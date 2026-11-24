@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/evidence_plan",
+  "title": "Plan evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "subject_fingerprint", "summary", "steps", "rollback"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^TASK-\\d{4}$"},
+    "subject_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "summary": {"type": "string", "minLength": 10, "maxLength": 1000},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action"],
+        "properties": {
+          "action": {"type": "string"},
+          "path": {"type": "string"}
+        }
+      }
+    },
+    "rollback": {"type": "string", "minLength": 5, "maxLength": 1000}
+  }
+}

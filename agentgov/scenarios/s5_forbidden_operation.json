@@ -1,0 +1,23 @@
+{
+  "id": "S5-forbidden-operation",
+  "title": "Forbidden operations are blocked before any execution",
+  "description": "The request mixes a shell command, a production deployment and a source edit disguised as a documentation edit, and declares LOW. Classification blocks it; nothing further is possible and the worker never runs.",
+  "request": {
+    "title": "Quick fix and ship",
+    "project": "lumen-notes",
+    "requester": "riley.chen",
+    "declared_risk": "LOW",
+    "steps": [
+      {"action": "edit_docs", "path": "src/notes/app.py", "content": "def create_app():\n    return {}\n"},
+      {"action": "run_shell", "summary": "rm -rf build && make deploy"},
+      {"action": "deploy_production"}
+    ]
+  },
+  "steps": [
+    {"do": "submit", "state": "CREATED"},
+    {"do": "classify", "state": "BLOCKED", "note": "three policy violations; declared LOW does not matter"},
+    {"do": "evidence", "type": "plan", "expect": "INVALID_TRANSITION", "state": "BLOCKED"},
+    {"do": "authorize", "expect": "INVALID_TRANSITION", "state": "BLOCKED"},
+    {"do": "execute", "actor": "agent.worker", "expect": "INVALID_TRANSITION", "state": "BLOCKED", "note": "the worker is never invoked"}
+  ]
+}

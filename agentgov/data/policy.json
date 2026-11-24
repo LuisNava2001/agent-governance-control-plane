@@ -1,0 +1,43 @@
+{
+  "policy_id": "demo-policy-v1",
+  "description": "Example governance policy for a fictional application (Lumen Notes). Rules are data; the engine that applies them is deterministic code.",
+  "actions": [
+    {"name": "edit_docs", "level": "LOW", "description": "Edit documentation files.", "writes": ["docs/**", "*.md"], "fixed_outputs": [], "requires_release": false},
+    {"name": "add_tests", "level": "LOW", "description": "Add or edit test files.", "writes": ["tests/**"], "fixed_outputs": [], "requires_release": false},
+    {"name": "run_tests", "level": "LOW", "description": "Simulated test run inside the sandbox; nothing is executed.", "writes": [], "fixed_outputs": [".agent/test-run.json"], "requires_release": false},
+    {"name": "edit_source", "level": "MEDIUM", "description": "Edit application source files.", "writes": ["src/**"], "fixed_outputs": [], "requires_release": false},
+    {"name": "update_dependency", "level": "MEDIUM", "description": "Change a pinned dependency.", "writes": ["requirements.txt"], "fixed_outputs": [], "requires_release": false},
+    {"name": "change_auth", "level": "HIGH", "description": "Change authentication or session handling.", "writes": ["src/auth/**"], "fixed_outputs": [], "requires_release": false},
+    {"name": "prepare_release", "level": "HIGH", "description": "Bump VERSION and add a CHANGELOG entry.", "writes": [], "fixed_outputs": ["VERSION", "CHANGELOG.md"], "requires_release": true},
+    {"name": "publish_release", "level": "CRITICAL", "description": "Simulated publication: writes a simulation record, deploys nothing.", "writes": [], "fixed_outputs": [".agent/release-simulation.json"], "requires_release": true}
+  ],
+  "forbidden_actions": [
+    {"name": "run_shell", "reason": "Agents may not run arbitrary commands."},
+    {"name": "deploy_production", "reason": "This control plane never deploys; publication is simulated only."},
+    {"name": "read_secrets", "reason": "Agents never receive credentials or secrets."},
+    {"name": "delete_repository", "reason": "Destructive repository operations are out of scope."},
+    {"name": "call_external_api", "reason": "Agents have no network access."},
+    {"name": "disable_tests", "reason": "Turning tests off to pass a gate is never allowed."}
+  ],
+  "path_rules": [
+    {"id": "P-SECRETS", "glob": "secrets/**", "forbidden": true, "reason": "Secret material is never editable by an agent."},
+    {"id": "P-ENV", "glob": "**/.env*", "forbidden": true, "reason": "Environment files may hold credentials."},
+    {"id": "P-AUTH", "glob": "src/auth/**", "level": "HIGH", "reason": "Authentication and session code."},
+    {"id": "P-MIGRATIONS", "glob": "src/migrations/**", "level": "HIGH", "reason": "Data migrations are hard to reverse."},
+    {"id": "P-SRC", "glob": "src/**", "level": "MEDIUM", "reason": "Application behaviour changes."},
+    {"id": "P-DEPS", "glob": "requirements.txt", "level": "MEDIUM", "reason": "Dependency changes affect the whole application."},
+    {"id": "P-TESTS", "glob": "tests/**", "level": "LOW", "reason": "Test code only."},
+    {"id": "P-DOCS", "glob": "docs/**", "level": "LOW", "reason": "Documentation only."},
+    {"id": "P-ROOT-MD", "glob": "*.md", "level": "LOW", "reason": "Top-level Markdown documentation."}
+  ],
+  "unmatched_path_level": "HIGH",
+  "escalations": [
+    {"id": "E-LARGE", "min_steps": 10, "level": "HIGH", "reason": "Large change sets get a human reviewer."}
+  ],
+  "requirements": [
+    {"level": "LOW", "evidence": ["plan"], "approvals": 0, "approver_roles": [], "summary": "A plan; authorized automatically by policy."},
+    {"level": "MEDIUM", "evidence": ["plan", "test_report"], "approvals": 0, "approver_roles": [], "summary": "A plan and a passing test report; authorized automatically by policy."},
+    {"level": "HIGH", "evidence": ["plan", "test_report", "risk_assessment"], "approvals": 1, "approver_roles": ["approver"], "summary": "Plan, passing tests and a risk assessment, plus one human approver who is not the requester."},
+    {"level": "CRITICAL", "evidence": ["plan", "test_report", "risk_assessment", "release_plan"], "approvals": 2, "approver_roles": ["approver", "release_manager"], "summary": "Everything HIGH needs plus a release plan, and two distinct approvers including a release manager."}
+  ]
+}

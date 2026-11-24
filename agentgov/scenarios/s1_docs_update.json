@@ -1,0 +1,25 @@
+{
+  "id": "S1-low-risk-docs",
+  "title": "Low-risk documentation update completes",
+  "description": "A documentation-only change is classified LOW, needs only a plan, is authorized automatically by policy, executed by the simulated agent in a sandbox, verified and completed.",
+  "request": {
+    "title": "Document searching by tag",
+    "project": "lumen-notes",
+    "requester": "riley.chen",
+    "description": "Add a short section on tag search to the usage guide.",
+    "steps": [
+      {"action": "edit_docs", "path": "docs/usage.md", "summary": "Add a tag-search section",
+       "content": "# Using Lumen Notes\n\nCreate a note, tag it, and search by tag.\n\n## Searching by tag\n\nType `tag:` followed by the tag name, for example `tag:recipes`.\n"}
+    ]
+  },
+  "steps": [
+    {"do": "submit", "state": "CREATED"},
+    {"do": "classify", "state": "CLASSIFIED", "note": "docs/** and edit_docs are LOW"},
+    {"do": "evidence", "type": "plan", "state": "CLASSIFIED"},
+    {"do": "plan", "state": "PLANNED"},
+    {"do": "review", "state": "READY_FOR_REVIEW", "note": "LOW needs only the plan"},
+    {"do": "authorize", "state": "AUTHORIZED", "note": "policy grants LOW work without a human approver"},
+    {"do": "execute", "actor": "agent.worker", "state": "VERIFIED"},
+    {"do": "complete", "state": "COMPLETED"}
+  ]
+}

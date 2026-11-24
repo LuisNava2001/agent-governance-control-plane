@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/policy",
+  "title": "Governance policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["policy_id", "description", "actions", "forbidden_actions", "path_rules", "unmatched_path_level", "escalations", "requirements"],
+  "properties": {
+    "policy_id": {"type": "string", "pattern": "^[a-z0-9-]{3,40}$"},
+    "description": {"type": "string"},
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "level", "description", "writes", "fixed_outputs", "requires_release"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z][a-z_]{2,39}$"},
+          "level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+          "description": {"type": "string"},
+          "writes": {"type": "array", "items": {"type": "string"}},
+          "fixed_outputs": {"type": "array", "items": {"type": "string"}},
+          "requires_release": {"type": "boolean"}
+        }
+      }
+    },
+    "forbidden_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "reason"],
+        "properties": {"name": {"type": "string"}, "reason": {"type": "string"}}
+      }
+    },
+    "path_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "glob", "reason"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^P-[A-Z-]+$"},
+          "glob": {"type": "string"},
+          "level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+          "forbidden": {"type": "boolean"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "unmatched_path_level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "min_steps", "level", "reason"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^E-[A-Z-]+$"},
+          "min_steps": {"type": "integer", "minimum": 1},
+          "level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "evidence", "approvals", "approver_roles", "summary"],
+        "properties": {
+          "level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+          "evidence": {"type": "array", "uniqueItems": true, "items": {"enum": ["plan", "test_report", "risk_assessment", "release_plan"]}},
+          "approvals": {"type": "integer", "minimum": 0, "maximum": 3},
+          "approver_roles": {"type": "array", "uniqueItems": true, "items": {"enum": ["approver", "release_manager"]}},
+          "summary": {"type": "string"}
+        }
+      }
+    }
+  }
+}

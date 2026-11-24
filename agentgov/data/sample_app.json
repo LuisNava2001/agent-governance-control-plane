@@ -1,0 +1,14 @@
+{
+  "description": "Synthetic files for the fictional Lumen Notes application. Materialized into a per-execution sandbox; never executed.",
+  "files": {
+    "README.md": "# Lumen Notes (fictional)\n\nA small note-taking web application used only as demo data.\n",
+    "VERSION": "1.3.2\n",
+    "CHANGELOG.md": "# Changelog\n\n## 1.3.2\n\n- Fix note ordering on the archive page.\n",
+    "docs/usage.md": "# Using Lumen Notes\n\nCreate a note, tag it, and search by tag.\n",
+    "requirements.txt": "markdown-renderer==2.1.0\n",
+    "src/notes/app.py": "\"\"\"Lumen Notes application entry point (fictional).\"\"\"\n\n\ndef create_app():\n    return {\"name\": \"lumen-notes\"}\n",
+    "src/notes/search.py": "def search(notes, tag):\n    return [note for note in notes if tag in note[\"tags\"]]\n",
+    "src/auth/session.py": "SESSION_MINUTES = 60\n\n\ndef session_timeout():\n    return SESSION_MINUTES\n",
+    "tests/test_search.txt": "Simulated test inventory: search_by_tag, search_empty_tag, search_unknown_tag\n"
+  }
+}

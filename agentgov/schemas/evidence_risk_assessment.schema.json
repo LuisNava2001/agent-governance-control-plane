@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/evidence_risk_assessment",
+  "title": "Risk assessment evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "subject_fingerprint", "assessed_level", "risks"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^TASK-\\d{4}$"},
+    "subject_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "assessed_level": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+    "risks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "mitigation"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^R\\d{1,2}$"},
+          "description": {"type": "string", "minLength": 5, "maxLength": 500},
+          "mitigation": {"type": "string", "minLength": 5, "maxLength": 500}
+        }
+      }
+    }
+  }
+}

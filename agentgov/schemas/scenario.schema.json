@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentgov/scenario",
+  "title": "Reproducible demo scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "description", "request", "steps"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^S\\d-[a-z-]+$"},
+    "title": {"type": "string"},
+    "description": {"type": "string"},
+    "request": {"type": "object"},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["do"],
+        "properties": {
+          "do": {
+            "enum": ["submit", "classify", "evidence", "plan", "review", "release_plan", "authorize", "approve", "reject",
+                     "amend", "execute", "complete", "block", "tamper_evidence"]
+          },
+          "actor": {"type": "string"},
+          "note": {"type": "string"},
+          "expect": {"type": "string"},
+          "state": {"type": "string"},
+          "type": {"type": "string"},
+          "source": {"type": "string"},
+          "with": {"type": "object"},
+          "fingerprint": {"enum": ["current", "previous"]},
+          "grant": {"enum": ["current", "previous"]},
+          "request": {"type": "object"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

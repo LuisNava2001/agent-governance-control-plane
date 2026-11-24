@@ -1,0 +1,34 @@
+{
+  "id": "S3-human-approval",
+  "title": "High-risk change needs a separate human approver",
+  "description": "An authentication change is HIGH. The requester, the agent and a non-approver cannot approve; an approver's sign-off is bound to the reviewed fingerprint; a second approval and a second execution are refused.",
+  "request": {
+    "title": "Shorten idle session timeout",
+    "project": "lumen-notes",
+    "requester": "riley.chen",
+    "steps": [
+      {"action": "change_auth", "path": "src/auth/session.py",
+       "content": "SESSION_MINUTES = 30\n\n\ndef session_timeout():\n    return SESSION_MINUTES\n"},
+      {"action": "run_tests"}
+    ]
+  },
+  "steps": [
+    {"do": "submit", "state": "CREATED"},
+    {"do": "classify", "state": "CLASSIFIED", "note": "src/auth/** is HIGH"},
+    {"do": "evidence", "type": "plan"},
+    {"do": "plan", "state": "PLANNED"},
+    {"do": "evidence", "type": "test_report", "source": "ci-simulator"},
+    {"do": "evidence", "type": "risk_assessment"},
+    {"do": "review", "state": "READY_FOR_REVIEW"},
+    {"do": "authorize", "state": "APPROVAL_REQUIRED"},
+    {"do": "execute", "actor": "agent.worker", "expect": "INVALID_TRANSITION", "state": "APPROVAL_REQUIRED", "note": "no authorization yet"},
+    {"do": "approve", "actor": "riley.chen", "expect": "APPROVAL_REJECTED", "note": "requester cannot approve own work"},
+    {"do": "approve", "actor": "agent.worker", "expect": "NOT_PERMITTED", "note": "an agent is never an approver"},
+    {"do": "approve", "actor": "noor.haddad", "expect": "NOT_PERMITTED", "note": "engineer without the approver role"},
+    {"do": "approve", "actor": "sam.ortiz", "state": "AUTHORIZED"},
+    {"do": "approve", "actor": "kai.morgan", "expect": "INVALID_TRANSITION", "state": "AUTHORIZED", "note": "no double authorization"},
+    {"do": "execute", "actor": "agent.worker", "state": "VERIFIED"},
+    {"do": "execute", "actor": "agent.worker", "expect": "DUPLICATE_EXECUTION", "state": "VERIFIED", "note": "the grant was consumed"},
+    {"do": "complete", "state": "COMPLETED"}
+  ]
+}

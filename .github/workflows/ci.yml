@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # No dependencies to install: runtime and tests use the standard library only.
+      - name: Unit, integration, concurrency and scenario tests
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Demo scenarios behave as specified and demo data is up to date
+        run: python -m agentgov demo --out demo/data.js --check
+
+      - name: CLI smoke test
+        shell: bash  # fail on the first failing command on every OS
+        run: |
+          python -m agentgov --home .ci-home init
+          python -m agentgov --home .ci-home list
+          python -m agentgov --home .ci-home verify
