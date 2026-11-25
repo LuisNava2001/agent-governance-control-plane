@@ -41,9 +41,9 @@ every non-terminal state to BLOCKED.
   AUTHORIZED: it must be planned, evidenced and authorized again.
 - **Execution** is entered only from AUTHORIZED, and COMPLETED only from VERIFIED.
 
-## Adjustments to the suggested state list
+## Two design choices
 
-The suggested 11 states are kept. Two choices are worth stating:
+The state set is the 11 states above. Two choices are worth stating:
 
 - `PLANNED -> READY_FOR_REVIEW` is a direct, listed edge when every required evidence item is already valid, so
   a LOW task does not pass through an empty EVIDENCE_PENDING stop. EVIDENCE_PENDING is entered only when

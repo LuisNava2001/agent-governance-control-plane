@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agent-governance-control-plane"
 version = "0.1.0"
-description = "Deterministic control plane for AI-agent tasks: state machine, policy-based risk classification, evidence gates, fingerprint-bound human approval, sandboxed simulated execution and a hash-chained audit log."
+description = "Deterministic control plane for AI-agent tasks: state machine, policy-based risk classification, evidence gates, fingerprint-bound human approval, path-confined simulated execution and a hash-chained audit log."
 readme = "README.md"
 requires-python = ">=3.11"
 # Runtime and tests use the Python standard library only.

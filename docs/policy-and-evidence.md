@@ -51,7 +51,8 @@ time, revision, content reference and the SHA-256 digest of the stored content.
 2. Its digest still equals the digest registered at submission (detects edits on disk).
 3. It matches the JSON Schema for its type.
 4. It is bound to this task and to the current facts fingerprint (detects reuse across tasks or revisions).
-5. Semantic checks:
+5. Consistency checks on what the evidence declares. The evidence is self-declared JSON submitted by a person;
+   nothing is executed to produce or confirm it (a test report says tests passed, it does not run them):
    - `plan` covers exactly the requested steps.
    - `test_report` counts add up, at least one test ran, none failed, result PASS.
    - `risk_assessment` does not assess below the computed level.

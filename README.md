@@ -1,8 +1,9 @@
 # agent-governance-control-plane
 
 A deterministic control plane that governs the lifecycle of tasks carried out by AI agents: an explicit state
-machine, policy-based risk classification, evidence gates, fingerprint-bound human approval, sandboxed execution
-and a hash-chained audit log. Python standard library only; runs offline. All projects, people and data are
+machine, policy-based risk classification, evidence gates, fingerprint-bound human approval, execution confined to
+a per-run directory by path checks (not OS-level isolation) and a hash-chained audit log. Python standard library
+only; runs offline. All projects, people and data are
 fictional, and the agent is simulated.
 
 ## 1. Project Overview
@@ -10,7 +11,7 @@ fictional, and the agent is simulated.
 Ask an agent to change a (fictional) application and this control plane decides, step by step and in code:
 
 - how risky the request is;
-- what evidence is needed and whether the evidence is actually valid;
+- what evidence is needed and whether the submitted evidence is current, unmodified, schema-valid and consistent;
 - whether a human must approve, and whether that approval still matches what will run;
 - which simulated actions the agent may perform and where;
 - whether the result can be accepted.
@@ -33,14 +34,16 @@ engineering controls that do not depend on the agent behaving well:
 - **Explicit state machine**: 11 states and a transition table; any unlisted move is refused.
 - **Deterministic policy engine**: four risk levels (LOW to CRITICAL) from actions, paths and size; a declared
   lower risk is ignored; unknown actions are forbidden. No LLM is involved in any policy decision.
-- **Evidence gates**: digest, JSON Schema, task and revision binding, and semantic checks, re-run at every gate.
+- **Evidence gates**: digest, JSON Schema, task and revision binding, and consistency checks on what the evidence
+  declares, re-run at every gate. Evidence is self-declared JSON; nothing runs the tests a report describes.
 - **Human-in-the-loop**: approvals quote a review fingerprint; separation of duties; quorum and roles for
   CRITICAL work; amendments invalidate approvals and grants.
 - **Execution boundaries**: a simulated worker with a fixed action catalog, writing only in a per-execution
-  sandbox; its output is verified, never trusted.
+  sandbox directory guarded by path checks (no process or OS-level isolation); its output is verified, never
+  trusted.
 - **Release plans** that reach "generated", "authorized" and "simulated", and never claim a deployment.
-- **Audit and concurrency**: hash-chained log, sealed task documents, file lock plus compare-and-swap, one
-  execution per grant.
+- **Audit and concurrency**: hash-chained log, each task document pinned by its SHA-256 digest in the audit log
+  (the "task seal"; a hash, not a signature), file lock plus compare-and-swap, one execution per grant.
 
 ## 4. Architecture
 
@@ -101,7 +104,9 @@ Full table, rules and tested invariants: [docs/state-machine.md](docs/state-mach
 | CRITICAL | publishing a release | plus release plan | 2 distinct, one release manager |
 
 Evidence is never accepted because a file exists: each gate re-checks its digest, schema, binding to the task
-and to the current facts, and its meaning (tests passed, plan matches the steps, assessment not below the level).
+and to the current facts, and the consistency of what it declares (a test report with zero failures, a plan that
+matches the steps, an assessment not below the level). The evidence is self-declared JSON: the control plane checks
+it but does not produce it, and no test is actually run.
 Classification criteria and the limits of the model: [docs/policy-and-evidence.md](docs/policy-and-evidence.md).
 
 ## 7. Human Authorization
@@ -117,10 +122,14 @@ This is a **local demonstration control**: actors come from a JSON file and are 
 ## 8. Execution Boundaries
 
 The simulated worker knows eight actions, for example writing approved content, a simulated test run or a
-simulated publication. It cannot run commands, use the network, read secrets or leave its sandbox, and a test
-enforces its imports. After it runs, the control plane checks the steps it reports, every changed file, the exact
-content written and the simulated test result. Claims in the agent's report are ignored. A crash, an escape
-attempt or an unauthorized file change ends in BLOCKED. See
+simulated publication. By construction it runs no commands, uses no network and reads no secrets; a static test
+checks that `worker.py` and `sandbox.py` import no process, network or file-system modules. Its writes go through
+a per-execution sandbox directory whose paths are checked lexically and after resolution. That is path confinement
+inside the same Python process, not process or OS isolation, and it is not containment for arbitrary code: code
+that bypassed the sandbox API could write elsewhere, and the before/after manifest covers only the sandbox. After
+the worker runs, the control plane checks the steps it reports, every changed file in the sandbox, the exact content
+written and the simulated test result. Claims in the agent's report are ignored. A crash, an escape attempt through
+the sandbox API or an unauthorized file change in the sandbox ends in BLOCKED. See
 [docs/execution-and-release.md](docs/execution-and-release.md).
 
 ## 9. Demo Walkthrough
@@ -186,6 +195,10 @@ the repository's Actions tab. Details: [docs/testing.md](docs/testing.md).
 - No authentication: `--actor` is trusted. Hashes detect naive tampering, not someone who rewrites the whole
   store; they are not signatures.
 - One machine, one store directory; a crash during execution leaves EXECUTING for an operator to resolve.
+- Writing a task file and appending its audit entry are two steps, and the audit log is appended in place. A crash
+  between them, or a truncated last audit line, makes later commands fail (`INTEGRITY_ERROR` or an unreadable log)
+  until an operator repairs the store by hand; `agentgov verify` shows where. See
+  [docs/audit-and-concurrency.md](docs/audit-and-concurrency.md#limits).
 - The worker is a stand-in. Real agents would need the same boundary enforced by an OS-level sandbox, not only
   by path checks.
 - The policy is an example for a fictional application, not a recommendation for real systems.

@@ -16,7 +16,7 @@ Refused commands are logged too, with the error code in the reason, so attempts 
 | Mechanism | Detects |
 | --- | --- |
 | Hash chain (`prev_hash`, `entry_hash`) | An entry edited, deleted, inserted or reordered |
-| Task seal (`task_digest` of the last applied entry) | A task file edited outside the control plane: a forged state, a fake grant, a lowered level |
+| Task seal (`task_digest` of the last applied entry: the SHA-256 of the task document, not a signature) | A task file edited outside the control plane: a forged state, a fake grant, a lowered level |
 | Facts fingerprint | Request content changed without an amendment |
 | Classification re-check | A stored level that no longer matches the facts, or a policy file changed after classification |
 | Evidence digests | Evidence content edited after submission |
@@ -34,7 +34,7 @@ tampering evident; they do not replace authentication, signed entries, access co
 | --- | --- |
 | Two writers interleave | Exclusive lock file (`O_CREAT \| O_EXCL`), held only for each read or compare-and-swap write |
 | Lost update from a stale copy | Optimistic versioning: commit succeeds only if `version` is unchanged, otherwise `CONCURRENT_UPDATE` |
-| Torn files | Writes go to a temporary file in the same directory, then `os.replace` |
+| Torn files | Task, evidence and counter files go to a temporary file in the same directory, then `os.replace`. The audit log is appended in place (see Limits) |
 | Double authorization | One approval per approver per fingerprint; the transition to AUTHORIZED happens once |
 | Duplicate execution | Starting execution consumes the grant inside the same compare-and-swap; later attempts get `DUPLICATE_EXECUTION` |
 | Stale authorization | Grants are bound to the review fingerprint and superseded by amendment |
@@ -50,3 +50,12 @@ approval each and reach quorum once.
 - If the process dies after starting execution, the task stays EXECUTING with a consumed grant. That is
   deliberate (no automatic retry, so no duplicate run); an operator resolves it with `block`.
 - A lock left behind by a killed process must be removed by hand (`.agentgov/.lock`).
+- A commit writes the task file (atomically) and then appends its audit entry: two steps, not one transaction. If
+  the process dies between them, the task document no longer matches its seal and every later state-changing
+  command on that task fails with `INTEGRITY_ERROR` (it fails closed). Recovery is manual: restore the previous task document, or
+  decide that the change happened and record it; `agentgov verify` reports the mismatch.
+- `audit.jsonl` is appended in place, not replaced atomically. A process killed mid-write can leave a truncated
+  last line; reading the log then fails for every command until an operator removes or repairs that line.
+- Evidence files and identifiers (`EV-`, `GR-`, `AP-`, `EX-` ...) are written before the compare-and-swap. A
+  command that loses a race (`CONCURRENT_UPDATE`) leaves an unreferenced evidence file and a skipped number; nothing
+  refers to them, so they are harmless but untidy.

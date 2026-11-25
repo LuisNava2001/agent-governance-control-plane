@@ -21,6 +21,14 @@ Each execution gets `workspaces/TASK-xxxx/EX-xxxx/`, filled with the synthetic L
 checked lexically (relative, no `..`, no absolute or drive paths, no backslashes) and after resolution (must stay
 under the sandbox root; symlinks in the path are refused).
 
+"Sandbox" here means a directory plus these path checks, applied by the `Sandbox` class that the worker writes
+through. It is not process or OS isolation: the worker runs in the control plane's own Python process, with the
+same user and file-system rights. The worker stays inside the directory because it is written to use the
+`Sandbox` API (and a static test checks its imports), not because anything stops it. Code that bypassed that API
+could write anywhere the process can, and the before/after manifest only covers the sandbox directory, so such a
+write would go undetected. A real agent would need an OS-level boundary (container, virtual machine or restricted
+user) with the same verification on top.
+
 ## Verification after the worker returns
 
 The control plane does not believe the worker's report. It compares a manifest of the sandbox taken before and
@@ -33,7 +41,8 @@ after the run and requires:
 - A simulated test run, if requested, passed.
 
 Free-form claims in the report (for example "approved by kai.morgan" or "deployed: true") are recorded as
-ignored and never change authorization. A crash, a sandbox violation or any failed check ends in BLOCKED.
+ignored and never change authorization. A crash, a sandbox violation (an escape attempted through the `Sandbox`
+API) or any failed check ends in BLOCKED.
 
 ## Release plans
 

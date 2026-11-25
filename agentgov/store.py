@@ -2,7 +2,9 @@
 
 Concurrency: every read-modify-write goes through an exclusive lock file and an optimistic version check
 (compare-and-swap on `version`). A writer holding a stale copy gets CONCURRENT_UPDATE instead of overwriting
-another writer's change. Files are replaced atomically (write to a temporary file, then `os.replace`).
+another writer's change. Task, evidence and counter files are replaced atomically (write to a temporary file,
+then `os.replace`); the audit log is appended in place, after the task file is written. Those two steps are not one
+transaction: see docs/audit-and-concurrency.md (Limits) for the failure modes and manual recovery.
 
 Integrity: the audit log is hash-chained, so editing, deleting or reordering an entry is detected by
 `verify_audit`, and every applied entry records the digest of the task document it produced, so a task file
