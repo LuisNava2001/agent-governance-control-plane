@@ -1,10 +1,17 @@
-# agent-governance-control-plane
+# Agent Governance Control Plane
 
-A deterministic control plane that governs the lifecycle of tasks carried out by AI agents: an explicit state
-machine, policy-based risk classification, evidence gates, fingerprint-bound human approval, execution confined to
-a per-run directory by path checks (not OS-level isolation) and a hash-chained audit log. Python standard library
-only; runs offline. All projects, people and data are
-fictional, and the agent is simulated.
+A deterministic control plane for tasks carried out by AI agents: an explicit state machine, policy-based risk
+classification, evidence gates, fingerprint-bound human authorization and a hash-chained audit log. Every decision,
+including every refusal, is made in code and recorded; no language model takes part in any of them.
+
+![Scenario S4 in the offline demo: an approval is invalidated when the facts change](docs/img/demo-stale-approval.png)
+
+**Stack:** Python 3.11+ standard library only · `unittest` · static HTML demo · GitHub Actions (Ubuntu and Windows,
+Python 3.11 to 3.13). **Try it:** [run the seven scenarios](#9-demo-walkthrough) or open `demo/index.html` offline.
+
+> **Demo scope.** The agent is a deterministic simulated worker. Its execution is confined to a per-run directory by
+> path checks, not by OS-level isolation. Actors come from a local file and are not authenticated, and hashes are
+> integrity checks, not signatures. All projects, people and data are fictional.
 
 ## 1. Project Overview
 
@@ -151,8 +158,6 @@ control plane's reason, approvals and grants, execution result, and the hash-cha
 | S6 critical-release | Release plan, two approvers incl. release manager, simulated publication | COMPLETED |
 | S7 tampered-evidence | Evidence edited on disk after authorization is caught at execution | BLOCKED |
 
-![Scenario S4 in the demo](docs/img/demo-stale-approval.png)
-
 Using the CLI directly (any shell; `--home` defaults to `.agentgov`):
 
 ```bash
@@ -213,7 +218,10 @@ the repository's Actions tab. Details: [docs/testing.md](docs/testing.md).
 
 ## 14. AI-Assisted Development Disclosure
 
-Built with AI assistance: the code, tests and documentation were drafted with Claude Code (Anthropic) under the
-author's direction. The author defined the scope, constraints and acceptance criteria and is responsible for
-reviewing and approving every change before publication. Test results, scenario traces and screenshots come from
-actual local runs. No language model takes part in any decision the control plane makes.
+I designed and directed this project; it was implemented with substantial help from Claude Code (Anthropic). I
+defined the problem, scope, constraints and acceptance criteria, reviewed the design and the results, and decided
+what to publish. Most of the code, tests and documentation were generated with the assistant under that direction,
+which is why the commits carry a `Co-Authored-By` trailer. Results quoted here come from the automated tests,
+evaluations and CI runs in this repository, on synthetic data. They show that the code behaves as described under
+those conditions, not that it is ready for production, and nothing this README marks as simulated, planned or not
+tested has been validated.
